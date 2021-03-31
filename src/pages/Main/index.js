@@ -1,16 +1,8 @@
 import React from "react";
-import { Title, Paragraph } from "./styles";
+import { Container } from "./styles";
 
 function Main() {
-  return (
-    <>
-      <Title>
-        Main
-        <small>Hello</small>
-      </Title>
-      <Paragraph>Alow</Paragraph>
-    </>
-  );
+  return <Container></Container>;
 }
 
 export default Main;
