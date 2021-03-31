@@ -13,7 +13,7 @@ function Main() {
       <Form onSubmit={() => {}}>
         <input type='text' placeholder='Adicionar Repositório' />
 
-        <SubmitButton disabled>
+        <SubmitButton disable={false}>
           <FaPlus color='#fff' size={14} />
         </SubmitButton>
       </Form>
