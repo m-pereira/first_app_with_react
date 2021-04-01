@@ -13,6 +13,24 @@ class Main extends Component {
     };
   }
 
+  // carregar os dados que estão no localStorage
+  componentDidMount() {
+    const repositories = localStorage.getItem('repositories');
+
+    if (repositories) {
+      this.setState({ repositories: JSON.parse(repositories) });
+    }
+  }
+
+  // salvar o estado repositories novamente no localStorage
+  componentDidUpdate(_, prevState) {
+    const { repositories } = this.state;
+
+    if (prevState.repositories !== repositories) {
+      localStorage.setItem('repositories', JSON.stringify(repositories));
+    }
+  }
+
   handleInputChage = (e) => {
     this.setState({ newRepo: e.target.value });
   };
