@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 import api from '../../services/api';
-import { Container, Form, SubmitButton, List } from './styles';
+import { Container, Form, Input, SubmitButton, List } from './styles';
 
 class Main extends Component {
   constructor(props) {
@@ -10,6 +10,7 @@ class Main extends Component {
       newRepo: '',
       repositories: [],
       loading: false,
+      formError: false,
     };
   }
 
@@ -32,7 +33,7 @@ class Main extends Component {
   }
 
   handleInputChage = (e) => {
-    this.setState({ newRepo: e.target.value });
+    this.setState({ newRepo: e.target.value, formError: false });
   };
 
   handleSubmit = async (e) => {
@@ -40,21 +41,33 @@ class Main extends Component {
     this.setState({ loading: true });
 
     const { newRepo, repositories } = this.state;
-    const response = await api.get(`/repos/${newRepo}`);
 
-    const data = {
-      name: response.data.full_name,
-    };
+    if (!newRepo) {
+      this.setState({ formError: true, loading: false });
+      return;
+    }
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+    try {
+      const response = await api.get(`/repos/${newRepo}`);
+
+      const data = {
+        name: response.data.full_name,
+        link: `github.com${response.config.url}`,
+      };
+
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+      });
+    } catch (error) {
+      this.setState({ formError: true });
+    } finally {
+      this.setState({ loading: false });
+    }
   };
 
   render() {
-    const { newRepo, loading, repositories } = this.state;
+    const { newRepo, loading, repositories, formError } = this.state;
 
     return (
       <Container>
@@ -64,11 +77,12 @@ class Main extends Component {
         </h1>
 
         <Form onSubmit={this.handleSubmit}>
-          <input
+          <Input
             type='text'
             placeholder='Adicionar Repositório'
             value={newRepo}
             onChange={this.handleInputChage}
+            error={formError}
           />
 
           <SubmitButton loading={loading}>
@@ -79,12 +93,15 @@ class Main extends Component {
             )}
           </SubmitButton>
         </Form>
+        {formError && (
+          <span style={{ color: 'red' }}>Repositório inválido</span>
+        )}
 
         <List>
           {repositories.map((repo) => (
             <li key={repo.name}>
               <span>{repo.name}</span>
-              <a href='alow'>Detalhes</a>
+              <a href={repo.link}>Detalhes</a>
             </li>
           ))}
         </List>
