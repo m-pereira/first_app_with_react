@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { Container, Form, Input, SubmitButton, List } from './styles';
 
@@ -52,7 +53,7 @@ class Main extends Component {
 
       const data = {
         name: response.data.full_name,
-        link: `github.com${response.config.url}`,
+        // link: `github.com${response.config.url}`,
       };
 
       this.setState({
@@ -101,7 +102,12 @@ class Main extends Component {
           {repositories.map((repo) => (
             <li key={repo.name}>
               <span>{repo.name}</span>
-              <a href={repo.link}>Detalhes</a>
+              {/* o formato de link normal html (<a>) recarrega a pagina,
+              por isso precisado de um que vem do nosso router
+              <a href={repo.link}>Detalhes</a> */}
+              <Link to={`/repository/${encodeURIComponent(repo.name)}`}>
+                Detalhes
+              </Link>
             </li>
           ))}
         </List>
