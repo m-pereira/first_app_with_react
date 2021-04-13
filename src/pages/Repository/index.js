@@ -1,34 +1,19 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
 import { Loading, Owner, IssueList } from './styles';
 import Container from '../../components/Container';
 
-class Repository extends Component {
-  // outra forma de declarar os propTypes, porem nessa versão o ESLint, nao gostou mto
-  // static propTypes = {
-  //   match: PropTypes.shape({
-  //     params: PropTypes.shape({
-  //       repository: PropTypes.string,
-  //     }),
-  //   }).isRequired,
-  // };
+const Repository = ({ match }) => {
+  const [repository, setRepository] = useState({});
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      repository: {},
-      issues: [],
-      loading: true,
-    };
-  }
-
-  async componentDidMount() {
-    const { match } = this.props;
+  useEffect(async () => {
     const repoName = decodeURIComponent(match.params.repository);
 
-    const [repository, issues] = await Promise.all([
+    const [dataRepository, dataIssues] = await Promise.all([
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`),
       {
@@ -40,52 +25,46 @@ class Repository extends Component {
       // foi usado uma função do axios onde os params da url podem ser passados como js
     ]);
 
-    this.setState({
-      repository: repository.data,
-      issues: issues.data,
-      loading: false,
-    });
+    setRepository(dataRepository.data);
+    setIssues(dataIssues.data);
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return <Loading>Carregando...</Loading>;
   }
 
-  render() {
-    const { repository, issues, loading } = this.state;
+  return (
+    <Container>
+      <Owner>
+        <Link to='/'>Voltar aos repositórios</Link>
+        <img src={repository.owner.avatar_url} alt={repository.owner.login} />
+        <h1>{repository.name}</h1>
+        <p>{repository.description}</p>
+      </Owner>
 
-    if (loading) {
-      return <Loading>Carregando...</Loading>;
-    }
-
-    return (
-      <Container>
-        <Owner>
-          <Link to='/'>Voltar aos repositórios</Link>
-          <img src={repository.owner.avatar_url} alt={repository.owner.login} />
-          <h1>{repository.name}</h1>
-          <p>{repository.description}</p>
-        </Owner>
-
-        <IssueList>
-          {issues.map((issue) => (
-            <li key={String(issue.id)}>
-              <img
-                src={issue.user.avatar_url}
-                alt={`profile of ${issue.user.login}`}
-              />
-              <div>
-                <strong>
-                  <a href={issue.html_url}>{issue.title}</a>
-                  {issue.labels.map((label) => (
-                    <span key={String(label.id)}>{label.name}</span>
-                  ))}
-                </strong>
-                <p>{issue.user.login}</p>
-              </div>
-            </li>
-          ))}
-        </IssueList>
-      </Container>
-    );
-  }
-}
+      <IssueList>
+        {issues.map((issue) => (
+          <li key={String(issue.id)}>
+            <img
+              src={issue.user.avatar_url}
+              alt={`profile of ${issue.user.login}`}
+            />
+            <div>
+              <strong>
+                <a href={issue.html_url}>{issue.title}</a>
+                {issue.labels.map((label) => (
+                  <span key={String(label.id)}>{label.name}</span>
+                ))}
+              </strong>
+              <p>{issue.user.login}</p>
+            </div>
+          </li>
+        ))}
+      </IssueList>
+    </Container>
+  );
+};
 
 Repository.propTypes = {
   match: PropTypes.shape({
